@@ -15,8 +15,8 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _numberPlateController = TextEditingController();
   final TextEditingController _vehicleOwnerController = TextEditingController();
-  String? _selectedCategory; // Variable to hold selected category
-  bool _inOutStatus = true;
+  String? _selectedCategory;
+  bool _inOutStatus = true; // Defaulting to true, modify as needed
 
   List<String> categories = ['Faculty', 'Student', 'PG Scholar'];
 
@@ -40,8 +40,17 @@ class _RegisterPageState extends State<RegisterPage> {
       'numberPlate': _numberPlateController.text,
       'vehicleOwner': _vehicleOwnerController.text,
       'category': _selectedCategory,
-      'inOutStatus': _inOutStatus
+      'inOutStatus': _inOutStatus,
+      'entryArray': _inOutStatus ? [DateTime.now().toIso8601String()] : [],
+      'exitArray': _inOutStatus ? [] : [DateTime.now().toIso8601String()]
     });
+  }
+
+  Future<void> updateInOutStatus(String id, bool newStatus) async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref('vehicles/$id');
+    // Append the current timestamp to the appropriate array
+    await ref.child(newStatus ? 'entryArray' : 'exitArray').push().set(DateTime.now().toIso8601String());
+    await ref.update({'inOutStatus': newStatus});
   }
 
   void _submitForm() {
@@ -106,7 +115,7 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             SizedBox(height: 20),
             SwitchListTile(
-              title: Text('IN/OUT Status'),
+              title: Text('Inside the premise'),
               value: _inOutStatus,
               onChanged: (bool value) {
                 setState(() {
@@ -117,8 +126,8 @@ class _RegisterPageState extends State<RegisterPage> {
             SizedBox(height: 20),
             MaterialButton(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-                side: BorderSide(color: buttonBackground)
+                  borderRadius: BorderRadius.circular(30),
+                  side: BorderSide(color: buttonBackground)
               ),
               onPressed: _submitForm,
               child: Text('Register Vehicle'),

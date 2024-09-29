@@ -39,10 +39,16 @@ class _FormPageState extends State<FormPage> {
     if (snapshot.exists && snapshot.value != null) {
       Map<dynamic, dynamic>? data = snapshot.value as Map<dynamic, dynamic>?;
       if (data != null && data.isNotEmpty) {
-        String key = data.keys.first; // Get the key of the first matching entry
-        bool currentStatus = data[key]['inOutStatus'] as bool; // Cast this as well to ensure it matches the expected type
+        String key = data.keys.first;
+        bool currentStatus = data[key]['inOutStatus'] as bool;
 
         bool newStatus = !currentStatus;
+        String arrayKey = newStatus ? 'entryArray' : 'exitArray';
+
+        // Append the current timestamp to the respective array
+        await ref.child(key).child(arrayKey).push().set(DateTime.now().toIso8601String());
+
+        // Update the inOutStatus
         await ref.child(key).update({'inOutStatus': newStatus});
 
         String message = newStatus ? 'ENTERED' : 'EXITED';
@@ -62,7 +68,6 @@ class _FormPageState extends State<FormPage> {
           ),
         );
       } else {
-        // Data not in expected format or empty map returned
         print("Error: Data is not in expected format or no data found.");
       }
     } else {
@@ -72,7 +77,6 @@ class _FormPageState extends State<FormPage> {
       }));
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
