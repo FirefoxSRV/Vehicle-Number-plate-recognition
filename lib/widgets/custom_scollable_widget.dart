@@ -13,6 +13,8 @@ class CustomScrollableWidget extends StatelessWidget {
   });
 
 
+
+
   Future<void> handleCapturePress(BuildContext context) async {
     var cameraStatus = await Permission.camera.status;
     if (!cameraStatus.isGranted) {
